@@ -1,3 +1,7 @@
+mod query;
+mod database;
+mod config;
+
 use clap::{
     Arg,
     ArgAction,
@@ -5,6 +9,8 @@ use clap::{
 };
 
 fn main() {
+    // TODO: first check if the chap launching this is even using an arch-based distro
+
     let command_matches = Command::new("rah")
         .about("rah - the Rusty AUR Helper !")
         .version("0.0.1")
@@ -39,8 +45,8 @@ fn main() {
     match command_matches.subcommand() {
         Some(("query", query_matches)) => {
             if let Some(packages) = query_matches.get_many::<String>("search") {
-                let comma_sep = packages.map(|s| s.as_str()).collect::<Vec<_>>().join(", ");
-                println!("Searching for {comma_sep}...");        
+                let packages = packages.map(|s| s.as_str()).collect::<Vec<_>>();
+                query::search(packages);
             }
             if let Some(packages) = query_matches.get_many::<String>("info") {
                 let comma_sep = packages.map(|s| s.as_str()).collect::<Vec<_>>().join(", ");
