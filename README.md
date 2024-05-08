@@ -8,3 +8,8 @@ So here I am, trying to make an AUR helper that
 
 and most importantly 
 - provides interactive mecanisms when things go bad during an install in order to fix everything, rather than trying to do its own thing and ending up breaking everything
+
+## Structure
+- main.rs &rarr; control flow
+- [subcommand].rs &rarr; functions related to each of these subcommands that will be launched from main
+- database.rs &rarr; helper functions for managing the package database
