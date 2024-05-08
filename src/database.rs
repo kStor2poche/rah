@@ -1,15 +1,23 @@
-pub fn add() {
-    todo!()
+pub struct Database {
+    path: String,
 }
 
-pub fn remove() {
-    todo!()
-}
+impl Database {
+    pub fn init() {}
 
-pub fn search() {
-    todo!()
-}
+    pub fn add() {
+        todo!()
+    }
 
-pub fn search_exact() {
-    todo!()
+    pub fn remove() {
+        todo!()
+    }
+
+    pub fn search() {
+        todo!()
+    }
+
+    pub fn search_exact() {
+        todo!()
+    }
 }
