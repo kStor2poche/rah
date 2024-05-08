@@ -3,10 +3,7 @@ mod database;
 mod query;
 
 use {
-    anyhow::{anyhow, Context, Result},
-    clap::{arg, Arg, ArgAction, Command},
-    log::{debug, error},
-    users::{get_current_uid, get_user_by_uid},
+    anyhow::{anyhow, Context, Result}, clap::{arg, Arg, ArgAction, Command}, log::{debug, error}, std::env, users::{get_current_uid, get_user_by_uid}
 };
 
 const VERSION: &str = "0.0.1";
@@ -25,7 +22,7 @@ fn check_exec_context() -> Result<()> {
 
     if uid != 0 {
         error!("Program should be run as root, returning with error...");
-        return Err(anyhow!("Program should be run as root, please launch it with your favourite privilege escalation method !"))
+        return Err(anyhow!("Program should be run as root, please launch it again with your favourite privilege escalation method !"))
     }
 
     // First check if the chap launching this is even using an arch-based distro
@@ -40,7 +37,13 @@ fn check_exec_context() -> Result<()> {
 }
 
 fn main() -> Result<()> {
-    env_logger::init();
+    if env::var("RUST_LOG").is_err() {
+        env_logger::builder()
+            .filter_level(log::LevelFilter::Off)
+            .init();
+    } else {
+        env_logger::init();
+    }
 
     check_exec_context()?;
 
