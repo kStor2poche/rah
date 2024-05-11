@@ -14,7 +14,7 @@ use {
 
 const VERSION: &str = "0.0.1";
 
-fn check_exec_context() -> Result<()> {
+fn require_root() -> Result<()> {
     let uid = get_current_uid();
 
     debug!("Current uid is {uid}...");
@@ -33,6 +33,10 @@ fn check_exec_context() -> Result<()> {
         return Err(anyhow!("Program should be run as root, please launch it again with your favourite privilege escalation method !"));
     }
 
+    Ok(())
+}
+
+fn check_exec_context() -> Result<()> {
     // First check if the chap launching this is even using an arch-based distro
     // TODO: more thourough checks an maybe allow running if pacman/makepkg is present ?
     let data = std::fs::read_to_string("/etc/os-release").context("Your distro is probably not an Arch-based distro, rah shouldn't be used on it. If untrue, please file an issue here https://github.com/kStor2poche/rah/issues\nAborting...")?;
