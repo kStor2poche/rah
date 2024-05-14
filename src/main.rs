@@ -112,7 +112,16 @@ async fn main() -> Result<()> {
                         .conflicts_with("search")
                         .action(ArgAction::Set)
                         .num_args(1..),
-                ),
+                )
+                .arg(
+                    Arg::new("package")
+                        .help("packages")
+                        .required_unless_present("search")
+                        .required_unless_present("info")
+                        .action(ArgAction::Set)
+                        .num_args(1..)
+                )
+                ,
         )
         .get_matches();
 
@@ -137,10 +146,10 @@ async fn main() -> Result<()> {
             }
             if let Some(packages) = query_matches.get_many::<String>("info") {
                 let packages = packages.map(|s| s.as_str()).collect::<Vec<_>>();
-                sync::info(packages);
-            } else if let Some(packages) = query_matches.get_many::<String>("") {
+                sync::info(packages).await?;
+            } else if let Some(packages) = query_matches.get_many::<String>("package") {
                 let comma_sep = packages.map(|s| s.as_str()).collect::<Vec<_>>().join(", ");
-                println!("Seeking db for {comma_sep}...");
+                println!("Install {comma_sep}...");
             }
         }
         Some((command, _)) => {
