@@ -8,8 +8,9 @@ use {
     clap::{arg, Arg, ArgAction, Command},
     log::{debug, error},
     std::env,
+    tokio,
+    tr::{tr, tr_init},
     users::{get_current_uid, get_user_by_uid},
-    tokio
 };
 
 const VERSION: &str = "0.0.1";
@@ -39,10 +40,15 @@ fn require_root() -> Result<()> {
 fn check_exec_context() -> Result<()> {
     // First check if the chap launching this is even using an arch-based distro
     // TODO: more thourough checks an maybe allow running if pacman/makepkg is present ?
-    let data = std::fs::read_to_string("/etc/os-release").context("Your distro is probably not an Arch-based distro, rah shouldn't be used on it. If untrue, please file an issue here https://github.com/kStor2poche/rah/issues\nAborting...")?;
+    let data = std::fs::read_to_string("/etc/os-release")
+        .context(
+            tr!(
+                "Your distro is probably not an Arch-based distro, rah shouldn't be used on it. If untrue, please file an issue here https://github.com/kStor2poche/rah/issues\nAborting..."
+                )
+        )?;
 
     if !data.contains("arch") {
-        return Err(anyhow!("Your distro is probably not an Arch-based distro, rah shouldn't be used on it. If untrue, please file an issue here https://github.com/kStor2poche/rah/issues\nAborting..."));
+        return Err(anyhow!(tr!("Your distro is probably not an Arch-based distro, rah shouldn't be used on it. If untrue, please file an issue here https://github.com/kStor2poche/rah/issues\nAborting...")));
     }
 
     Ok(())
@@ -58,6 +64,8 @@ async fn main() -> Result<()> {
         env_logger::init();
     }
 
+    tr_init!("./translations/");
+
     check_exec_context()?;
 
     let command_matches = Command::new("rah")
@@ -65,7 +73,7 @@ async fn main() -> Result<()> {
         .version(VERSION)
         .subcommand_required(true)
         .arg_required_else_help(true)
-        .arg(arg!(-c --config <FILE> "Choose a specific config file."))
+        .arg(Arg::new("config")/*arg!(-c --config <FILE> "Choose a specific config file.")*/)
         .subcommand(
             Command::new("query")
                 .short_flag('Q')
@@ -119,9 +127,8 @@ async fn main() -> Result<()> {
                         .required_unless_present("search")
                         .required_unless_present("info")
                         .action(ArgAction::Set)
-                        .num_args(1..)
-                )
-                ,
+                        .num_args(1..),
+                ),
         )
         .get_matches();
 

@@ -1,6 +1,6 @@
 use anyhow::Result;
-use raur::Raur;
 use chrono::{TimeZone, Utc};
+use raur::Raur;
 
 // const escape sequences
 const CLEAR: &str = "\x1b[0m";
@@ -27,7 +27,11 @@ pub async fn search(packages: Vec<&str>) -> Result<()> {
 
     let hits = raur.search(packages.join(" ")).await?;
 
-    println!("{BOLD}{BLUE}:: {CLEAR}{BOLD}Found {} package{}{CLEAR}", hits.len(), if hits.len() !=1 {"s"} else {""});
+    println!(
+        "{BOLD}{BLUE}:: {CLEAR}{BOLD}Found {} package{}{CLEAR}",
+        hits.len(),
+        if hits.len() != 1 { "s" } else { "" }
+    );
 
     let mut pkg_flags: Vec<_> = vec![String::from("")];
     for pkg in hits {
@@ -39,13 +43,19 @@ pub async fn search(packages: Vec<&str>) -> Result<()> {
         if let Some(pkg_ood) = pkg.out_of_date {
             let ood_str = Utc.timestamp_opt(pkg_ood, 0).unwrap();
             let last_mod_str = Utc.timestamp_opt(pkg.last_modified, 0).unwrap();
-            pkg_flags.push(format!("{RED} [out of date since {}, last update {}]{CLEAR}", ood_str.format("%Y/%m/%d"), last_mod_str.format("%Y/%m/%d")))
+            pkg_flags.push(format!(
+                "{RED} [out of date since {}, last update {}]{CLEAR}",
+                ood_str.format("%Y/%m/%d"),
+                last_mod_str.format("%Y/%m/%d")
+            ))
         }
-        println!("{BOLD}{} {GREEN}{}{}\n{CLEAR}    {}",
+        println!(
+            "{BOLD}{} {GREEN}{}{}\n{CLEAR}    {}",
             pkg.name,
             pkg.version,
             pkg_flags.join(""),
-            pkg.description.unwrap_or(format!("{GREY}No description.{CLEAR}"))
+            pkg.description
+                .unwrap_or(format!("{GREY}No description.{CLEAR}"))
         );
     }
 
@@ -56,7 +66,11 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
 
     let hits = raur.info(&packages).await?;
 
-    println!("{BOLD}{BLUE}:: {CLEAR}{BOLD}Found info for {} package{}{CLEAR}", hits.len(), if hits.len() !=1 {"s"} else {""});
+    println!(
+        "{BOLD}{BLUE}:: {CLEAR}{BOLD}Found info for {} package{}{CLEAR}",
+        hits.len(),
+        if hits.len() != 1 { "s" } else { "" }
+    );
 
     for pkg in hits {
         println!("{BOLD}Name : {CLEAR}{}", pkg.name);
@@ -64,44 +78,144 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         println!("{BOLD}Package base : {CLEAR}{}", pkg.package_base);
         println!("{BOLD}Votes : {CLEAR}{}", pkg.num_votes);
         println!("{BOLD}Popularity : {CLEAR}{}", pkg.popularity);
-        println!("{BOLD}Description : {CLEAR}{}", pkg.description.unwrap_or(format!("{GREY}No description.{CLEAR}")));
-        println!("{BOLD}Submitter : {CLEAR}{}", pkg.submitter.unwrap_or(format!("{GREY}No submitter.{CLEAR}")));
-        println!("{BOLD}Maintainer : {CLEAR}{}", pkg.maintainer.unwrap_or(format!("{GREY}No maintainer.{CLEAR}")));
+        println!(
+            "{BOLD}Description : {CLEAR}{}",
+            pkg.description
+                .unwrap_or(format!("{GREY}No description.{CLEAR}"))
+        );
+        println!(
+            "{BOLD}Submitter : {CLEAR}{}",
+            pkg.submitter
+                .unwrap_or(format!("{GREY}No submitter.{CLEAR}"))
+        );
+        println!(
+            "{BOLD}Maintainer : {CLEAR}{}",
+            pkg.maintainer
+                .unwrap_or(format!("{GREY}No maintainer.{CLEAR}"))
+        );
         let co_maintainers = pkg.co_maintainers;
-        println!("{BOLD}Co-maintainers : {CLEAR}{}", if co_maintainers.is_empty() { format!("{GREY}No co-maintainers.{CLEAR}") } else { co_maintainers.join(", ") });
+        println!(
+            "{BOLD}Co-maintainers : {CLEAR}{}",
+            if co_maintainers.is_empty() {
+                format!("{GREY}No co-maintainers.{CLEAR}")
+            } else {
+                co_maintainers.join(", ")
+            }
+        );
         if let Some(pkg_ood) = pkg.out_of_date {
             let ood_ts = Utc.timestamp_opt(pkg_ood, 0).unwrap();
-            println!("{BOLD}Out of date : {RED}Flagged out of date since {}{CLEAR}", ood_ts.format("%Y-%m-%d %H:%M (UTC)"))
+            println!(
+                "{BOLD}Out of date : {RED}Flagged out of date since {}{CLEAR}",
+                ood_ts.format("%Y-%m-%d %H:%M (UTC)")
+            )
         } else {
             println!("{BOLD}Out of date : {CLEAR}{GREY}Not flagged out of date{CLEAR}");
         }
         let first_sub_ts = Utc.timestamp_opt(pkg.first_submitted, 0).unwrap();
-        println!("{BOLD}First submitted : {CLEAR}{}", first_sub_ts.format("%Y-%m-%d %H:%M (UTC)"));
+        println!(
+            "{BOLD}First submitted : {CLEAR}{}",
+            first_sub_ts.format("%Y-%m-%d %H:%M (UTC)")
+        );
         let last_mod_ts = Utc.timestamp_opt(pkg.last_modified, 0).unwrap();
-        println!("{BOLD}Last updated : {CLEAR}{}", last_mod_ts.format("%Y-%m-%d %H:%M (UTC)"));
+        println!(
+            "{BOLD}Last updated : {CLEAR}{}",
+            last_mod_ts.format("%Y-%m-%d %H:%M (UTC)")
+        );
 
-        println!("{BOLD}Git clone URL : {CLEAR}https://aur.archlinux.org/{}.git", pkg.package_base);
-        println!("{BOLD}Upstream URL : {CLEAR}{}", pkg.url.unwrap_or(format!("{GREY}No upstream URL.")));
-        println!("{BOLD}Tarball URL : {CLEAR}https://aur.archlinux.org{}", pkg.url_path);
+        println!(
+            "{BOLD}Git clone URL : {CLEAR}https://aur.archlinux.org/{}.git",
+            pkg.package_base
+        );
+        println!(
+            "{BOLD}Upstream URL : {CLEAR}{}",
+            pkg.url.unwrap_or(format!("{GREY}No upstream URL."))
+        );
+        println!(
+            "{BOLD}Tarball URL : {CLEAR}https://aur.archlinux.org{}",
+            pkg.url_path
+        );
         println!("{BOLD}Licenses : {CLEAR}{}", pkg.license.join(", "));
         let groups = pkg.groups;
-        println!("{BOLD}Groups : {CLEAR}{}", if groups.is_empty() { format!("{GREY}No groups.{CLEAR}") } else { groups.join(", ") });
+        println!(
+            "{BOLD}Groups : {CLEAR}{}",
+            if groups.is_empty() {
+                format!("{GREY}No groups.{CLEAR}")
+            } else {
+                groups.join(", ")
+            }
+        );
         let provides = pkg.provides;
-        println!("{BOLD}Provides : {CLEAR}{}", if provides.is_empty() { format!("{GREY}No provides.{CLEAR}") } else { provides.join(", ") });
+        println!(
+            "{BOLD}Provides : {CLEAR}{}",
+            if provides.is_empty() {
+                format!("{GREY}No provides.{CLEAR}")
+            } else {
+                provides.join(", ")
+            }
+        );
         let depends = pkg.depends;
-        println!("{BOLD}Depends : {CLEAR}{}", if depends.is_empty() { format!("{GREY}No dependencies.{CLEAR}") } else { depends.join(", ") });
+        println!(
+            "{BOLD}Depends : {CLEAR}{}",
+            if depends.is_empty() {
+                format!("{GREY}No dependencies.{CLEAR}")
+            } else {
+                depends.join(", ")
+            }
+        );
         let opt_depends = pkg.opt_depends;
-        println!("{BOLD}Opt. dependencies : {CLEAR}{}", if opt_depends.is_empty() { format!("{GREY}No optionnal dependencies.{CLEAR}") } else { opt_depends.join(", ") });
+        println!(
+            "{BOLD}Opt. dependencies : {CLEAR}{}",
+            if opt_depends.is_empty() {
+                format!("{GREY}No optionnal dependencies.{CLEAR}")
+            } else {
+                opt_depends.join(", ")
+            }
+        );
         let make_depends = pkg.make_depends;
-        println!("{BOLD}Make dependencies : {CLEAR}{}", if make_depends.is_empty() { format!("{GREY}No make dependencies.{CLEAR}") } else { make_depends.join(", ") });
+        println!(
+            "{BOLD}Make dependencies : {CLEAR}{}",
+            if make_depends.is_empty() {
+                format!("{GREY}No make dependencies.{CLEAR}")
+            } else {
+                make_depends.join(", ")
+            }
+        );
         let check_depends = pkg.check_depends;
-        println!("{BOLD}Check dependencies : {CLEAR}{}", if check_depends.is_empty() { format!("{GREY}No check dependencies.{CLEAR}") } else { check_depends.join(", ") });
+        println!(
+            "{BOLD}Check dependencies : {CLEAR}{}",
+            if check_depends.is_empty() {
+                format!("{GREY}No check dependencies.{CLEAR}")
+            } else {
+                check_depends.join(", ")
+            }
+        );
         let conflicts = pkg.conflicts;
-        println!("{BOLD}Conflicts : {CLEAR}{}", if conflicts.is_empty() { format!("{GREY}No conflicts.{CLEAR}") } else { conflicts.join(", ") });
+        println!(
+            "{BOLD}Conflicts : {CLEAR}{}",
+            if conflicts.is_empty() {
+                format!("{GREY}No conflicts.{CLEAR}")
+            } else {
+                conflicts.join(", ")
+            }
+        );
         let replaces = pkg.replaces;
-        println!("{BOLD}Replaces : {CLEAR}{}", if replaces.is_empty() { format!("{GREY}No replaces.{CLEAR}") } else { replaces.join(", ") });
+        println!(
+            "{BOLD}Replaces : {CLEAR}{}",
+            if replaces.is_empty() {
+                format!("{GREY}No replaces.{CLEAR}")
+            } else {
+                replaces.join(", ")
+            }
+        );
         let keywords = pkg.keywords;
-        println!("{BOLD}Keywords : {CLEAR}{}", if keywords.is_empty() { format!("{GREY}No keywords.{CLEAR}") } else { keywords.join(", ") });
+        println!(
+            "{BOLD}Keywords : {CLEAR}{}",
+            if keywords.is_empty() {
+                format!("{GREY}No keywords.{CLEAR}")
+            } else {
+                keywords.join(", ")
+            }
+        );
         println!("")
     }
     Ok(())
