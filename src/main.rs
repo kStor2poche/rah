@@ -5,7 +5,7 @@ mod sync;
 
 use {
     anyhow::{anyhow, Context, Result},
-    clap::{arg, Arg, ArgAction, Command},
+    clap::{Arg, ArgAction, Command},
     log::{debug, error},
     std::env,
     tokio,
@@ -73,17 +73,21 @@ async fn main() -> Result<()> {
         .version(VERSION)
         .subcommand_required(true)
         .arg_required_else_help(true)
-        .arg(Arg::new("config")/*arg!(-c --config <FILE> "Choose a specific config file.")*/)
+        .arg(Arg::new("config")
+            .short('c')
+            .long("config")
+            .value_name("FILE")
+            .help(tr!("Choose a specific config file")))
         .subcommand(
             Command::new("query")
                 .short_flag('Q')
                 .long_flag("query")
-                .about("Query the local package database")
+                .about(tr!("Query the local package database"))
                 .arg(
                     Arg::new("search")
                         .short('s')
                         .long("search")
-                        .help("Search for matching packages in the local package database")
+                        .help(tr!("Search for matching packages in the local package database"))
                         .conflicts_with("info")
                         .action(ArgAction::Set)
                         .num_args(1..),
@@ -92,7 +96,7 @@ async fn main() -> Result<()> {
                     Arg::new("info")
                         .short('i')
                         .long("info")
-                        .help("Get package info from the local package database")
+                        .help(tr!("Get package info from the local package database"))
                         .conflicts_with("search")
                         .action(ArgAction::Set)
                         .num_args(1..),

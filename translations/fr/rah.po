@@ -1,0 +1,43 @@
+# French translations for PACKAGE package.
+# Copyright (C) 2024 THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+#  <kStor2poche>, 2024.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-05-21 15:20+0000\n"
+"PO-Revision-Date: 2024-05-21 17:20+0200\n"
+"Last-Translator:  <kStor2poche>\n"
+"Language-Team: French <traduc@traduc.org>\n"
+"Language: fr\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+
+#: src/main.rs:46 src/main.rs:51
+msgid ""
+"Your distro is probably not an Arch-based distro, rah shouldn't be used on "
+"it. If untrue, please file an issue here https://github.com/kStor2poche/rah/"
+"issues\n"
+"Aborting..."
+msgstr "Votre distribution n'est pas détectée comme étant basée sur arch, rah ne devrait pas être utilisé avec. Si ce n'est pas le cas, reportez s'il vous plaît le problème ici https://github.com/kStor2poche/rah/issues\n"
+"Arrêt..."
+
+#: src/main.rs:80
+msgid "Choose a specific config file"
+msgstr "Choisissez un fichier de configuration spécifique"
+
+#: src/main.rs:85
+msgid "Query the local package database"
+msgstr "Faire une requête à la base de données locale"
+
+#: src/main.rs:90
+msgid "Search for matching packages in the local package database"
+msgstr "Chercher pour les paquets correspondants dans la base de donnée locale"
+
+#: src/main.rs:99
+msgid "Get package info from the local package database"
+msgstr "Chercher l'info des paquets indexés localement"

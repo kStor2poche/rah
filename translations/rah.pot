@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-05-14 14:37+0000\n"
+"POT-Creation-Date: 2024-05-21 15:20+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -20,4 +20,20 @@ msgstr ""
 #: src/main.rs:46 src/main.rs:51
 msgid "Your distro is probably not an Arch-based distro, rah shouldn't be used on it. If untrue, please file an issue here https://github.com/kStor2poche/rah/issues\n"
 "Aborting..."
+msgstr ""
+
+#: src/main.rs:80
+msgid "Choose a specific config file"
+msgstr ""
+
+#: src/main.rs:85
+msgid "Query the local package database"
+msgstr ""
+
+#: src/main.rs:90
+msgid "Search for matching packages in the local package database"
+msgstr ""
+
+#: src/main.rs:99
+msgid "Get package info from the local package database"
 msgstr ""
