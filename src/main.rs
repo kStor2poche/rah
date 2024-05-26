@@ -4,13 +4,7 @@ mod query;
 mod sync;
 
 use {
-    anyhow::{anyhow, Context, Result},
-    clap::{Arg, ArgAction, Command},
-    log::{debug, error},
-    std::env,
-    tokio,
-    tr::{tr, tr_init},
-    users::{get_current_uid, get_user_by_uid},
+    crate::config::Config, anyhow::{anyhow, Context, Result}, clap::{Arg, ArgAction, Command}, log::{info, debug, error}, std::env, tokio, tr::{tr, tr_init}, users::{get_current_uid, get_user_by_uid}
 };
 
 const VERSION: &str = "0.0.1";
@@ -135,6 +129,16 @@ async fn main() -> Result<()> {
                 ),
         )
         .get_matches();
+
+    let mut conf = Config::default();
+
+    if let Some(conf_path) = command_matches.get_one::<String>("config") {
+        conf.config_path = conf_path.to_string();
+    }
+    
+    info!("Getting config from \"{}\"...", conf.config_path);
+
+    conf.parse()?;
 
     match command_matches.subcommand() {
         Some(("query", query_matches)) => {

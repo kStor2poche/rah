@@ -35,7 +35,7 @@ pub async fn search(packages: Vec<&str>) -> Result<()> {
 
     let mut pkg_flags: Vec<_> = vec![String::from("")];
     for pkg in hits {
-        // TODO: Query pacman (and/or our database ?) to see if searched packages are already
+        // TODO: Fetch the pacman db (and/or our database ?) to see if searched packages are already
         // installed with pacman and/or are in the local rah DB
 
         pkg_flags.clear();

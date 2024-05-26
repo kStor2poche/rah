@@ -1,23 +1,28 @@
+use {
+    anyhow::Result,
+    toml,
+};
+
 pub struct Config {
-    config_path: String,
-    db_path: String,
-    cache_path: String,
-    color: bool,
-    pager: Option<String>,
+    pub config_path: String,
+    pub db_path: String,
+    pub cache_path: String,
+    pub color: bool,
+    //pub pager_cmd: Option<String>,
 }
 
 impl Config {
-    fn default() -> Self {
+    pub fn default() -> Self {
         Config {
-            config_path: String::from("/etc/rah/config"),
+            config_path: String::from("/etc/rah.toml"),
             db_path: String::from("/var/lib/rah/db/"),
             cache_path: String::from("/var/cache/rah/"),
             color: true,
-            pager: Some(String::from("less -r")),
+            //pager_cmd: Some(String::from("less -r")),
         }
     }
 
-    fn parse(&mut self) {
+    pub fn parse(&mut self) -> Result<()> {
         todo!()
     }
 }
