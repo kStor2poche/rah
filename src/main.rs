@@ -163,8 +163,8 @@ async fn main() -> Result<()> {
                 let packages = packages.map(|s| s.as_str()).collect::<Vec<_>>();
                 sync::info(packages).await?;
             } else if let Some(packages) = query_matches.get_many::<String>("package") {
-                let comma_sep = packages.map(|s| s.as_str()).collect::<Vec<_>>().join(", ");
-                println!("Install {comma_sep}...");
+                let packages = packages.map(|s| s.as_str()).collect::<Vec<_>>();
+                sync::sync(packages).await?;
             }
         }
         Some((command, _)) => {

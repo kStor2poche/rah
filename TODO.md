@@ -1,10 +1,14 @@
 # To do
 
+## Choices...
+- [ ] Use rust-fluent for translations as it seems much less cumbersome
+
 ## Database
 - [ ] allow per-package config to be stored in the pkg db in order to remember user choices if they wish to
 
 ## Sync
 ### installation
+- [ ] basic installation with makepkg w/ cleaning or not
 - [ ] have option to build in a clean chroot
 
 ### update

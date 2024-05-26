@@ -1,26 +1,52 @@
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use chrono::{TimeZone, Utc};
 use raur::Raur;
 
 // const escape sequences
-const CLEAR: &str = "\x1b[0m";
-const BOLD: &str = "\x1b[1m";
-const BLACK: &str = "\x1b[30m";
-const RED: &str = "\x1b[31m";
-const GREEN: &str = "\x1b[32m";
-const YELLOW: &str = "\x1b[33m";
-const BLUE: &str = "\x1b[34m";
-const PURPLE: &str = "\x1b[35m";
-const CYAN: &str = "\x1b[36m";
-const GREY: &str = "\x1b[37m";
-const BLACK_L: &str = "\x1b[38";
-const RED_L: &str = "\x1b[39m";
-const GREEN_L: &str = "\x1b[40m";
-const YELLOW_L: &str = "\x1b[41m";
-const BLUE_L: &str = "\x1b[42m";
-const PURPLE_L: &str = "\x1b[43m";
-const CYAN_L: &str = "\x1b[44m";
-const WHITE: &str = "\x1b[45m";
+pub const CLEAR: &str = "\x1b[0m";
+pub const BOLD: &str = "\x1b[1m";
+pub const BLACK: &str = "\x1b[30m";
+pub const RED: &str = "\x1b[31m";
+pub const GREEN: &str = "\x1b[32m";
+pub const YELLOW: &str = "\x1b[33m";
+pub const BLUE: &str = "\x1b[34m";
+pub const PURPLE: &str = "\x1b[35m";
+pub const CYAN: &str = "\x1b[36m";
+pub const GREY: &str = "\x1b[37m";
+pub const BLACK_L: &str = "\x1b[38";
+pub const RED_L: &str = "\x1b[39m";
+pub const GREEN_L: &str = "\x1b[40m";
+pub const YELLOW_L: &str = "\x1b[41m";
+pub const BLUE_L: &str = "\x1b[42m";
+pub const PURPLE_L: &str = "\x1b[43m";
+pub const CYAN_L: &str = "\x1b[44m";
+pub const WHITE: &str = "\x1b[45m";
+
+pub async fn sync(packages: Vec<&str>) -> Result<()> {
+    let raur = raur::Handle::new();
+
+    let hits = raur.info(&packages).await?;
+
+    if hits.len() != packages.len() {
+        eprint!("{BOLD}{RED}error :{CLEAR} Package(s) missing : ");
+        let hit_names = hits.iter().map(|pkg| pkg.name.clone()).collect::<Vec<_>>();
+        for package in packages.as_slice() {
+            if !(hit_names.contains(&package.to_string())) {
+                eprint!("{} ", package);
+            }
+        }
+        eprintln!("");
+        todo!();
+        return Err(anyhow!("TODO"))
+    }
+
+    for hit in hits {
+        println!("haiii");
+        todo!()
+    }
+
+    Ok(())
+}
 
 pub async fn search(packages: Vec<&str>) -> Result<()> {
     let raur = raur::Handle::new();
@@ -61,6 +87,7 @@ pub async fn search(packages: Vec<&str>) -> Result<()> {
 
     Ok(())
 }
+
 pub async fn info(packages: Vec<&str>) -> Result<()> {
     let raur = raur::Handle::new();
 
