@@ -1,6 +1,10 @@
-use anyhow::{anyhow, Result};
-use chrono::{TimeZone, Utc};
-use raur::Raur;
+use {
+    anyhow::{anyhow, Result},
+    chrono::{TimeZone, Utc},
+    log::{error, info},
+    raur::Raur,
+    std::process::Command,
+};
 
 // const escape sequences
 pub const CLEAR: &str = "\x1b[0m";
@@ -28,20 +32,35 @@ pub async fn sync(packages: Vec<&str>) -> Result<()> {
     let hits = raur.info(&packages).await?;
 
     if hits.len() != packages.len() {
-        eprint!("{BOLD}{RED}error :{CLEAR} Package(s) missing : ");
+        let mut err = format!("Package(s) not found : ");
         let hit_names = hits.iter().map(|pkg| pkg.name.clone()).collect::<Vec<_>>();
         for package in packages.as_slice() {
             if !(hit_names.contains(&package.to_string())) {
-                eprint!("{} ", package);
+                err.push_str(package);
+                err.push(' ');
             }
         }
-        eprintln!("");
-        todo!();
-        return Err(anyhow!("TODO"))
+        error!("{}", err);
+        return Err(anyhow!("{}", err));
     }
 
     for hit in hits {
-        println!("haiii");
+        info!("checking dependencies for {} :", hit.name);
+        let pcmn_deps_chk = Command::new("pacman")
+            .arg("-T")
+            .args(hit.depends)
+            .output()?;
+        match pcmn_deps_chk.status.code() {
+            None => return Err(anyhow!("Pacman command did not exit or was killed by a signal")),
+            Some(127) => {
+                let deps_output = String::from_utf8_lossy(&pcmn_deps_chk.stdout);
+                let deps_vec = deps_output.split(' ').collect::<Vec<&str>>();
+                info!("{}'s missing deps : {:?}", hit.name, deps_vec);
+            },
+            Some(0) => info!("deps ok !"),
+            Some(_) => return Err(anyhow!("Pacman returned a fatal error : {}", String::from_utf8_lossy(&pcmn_deps_chk.stderr))),
+        }
+        info!("checking make dependencies for {} :", hit.name);
         todo!()
     }
 

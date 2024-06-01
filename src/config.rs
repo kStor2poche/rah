@@ -1,7 +1,4 @@
-use {
-    anyhow::Result,
-    toml,
-};
+use {anyhow::Result, toml};
 
 pub struct Config {
     pub config_path: String,

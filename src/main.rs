@@ -4,7 +4,14 @@ mod query;
 mod sync;
 
 use {
-    crate::config::Config, anyhow::{anyhow, Context, Result}, clap::{Arg, ArgAction, Command}, log::{info, debug, error}, std::env, tokio, tr::{tr, tr_init}, users::{get_current_uid, get_user_by_uid}
+    crate::config::Config,
+    anyhow::{anyhow, Context, Result},
+    clap::{Arg, ArgAction, Command},
+    log::{debug, error, info},
+    std::env,
+    tokio,
+    tr::{tr, tr_init},
+    users::{get_current_uid, get_user_by_uid},
 };
 
 const VERSION: &str = "0.0.1";
@@ -67,11 +74,13 @@ async fn main() -> Result<()> {
         .version(VERSION)
         .subcommand_required(true)
         .arg_required_else_help(true)
-        .arg(Arg::new("config")
-            .short('c')
-            .long("config")
-            .value_name("FILE")
-            .help(tr!("Choose a specific config file")))
+        .arg(
+            Arg::new("config")
+                .short('c')
+                .long("config")
+                .value_name("FILE")
+                .help(tr!("Choose a specific config file")),
+        )
         .subcommand(
             Command::new("query")
                 .short_flag('Q')
@@ -81,7 +90,9 @@ async fn main() -> Result<()> {
                     Arg::new("search")
                         .short('s')
                         .long("search")
-                        .help(tr!("Search for matching packages in the local package database"))
+                        .help(tr!(
+                            "Search for matching packages in the local package database"
+                        ))
                         .conflicts_with("info")
                         .action(ArgAction::Set)
                         .num_args(1..),
@@ -135,10 +146,10 @@ async fn main() -> Result<()> {
     if let Some(conf_path) = command_matches.get_one::<String>("config") {
         conf.config_path = conf_path.to_string();
     }
-    
+
     info!("Getting config from \"{}\"...", conf.config_path);
 
-    conf.parse()?;
+    //conf.parse()?;
 
     match command_matches.subcommand() {
         Some(("query", query_matches)) => {
