@@ -119,29 +119,29 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
     );
 
     for pkg in hits {
-        println!("{BOLD}Name : {CLEAR}{}", pkg.name);
-        println!("{BOLD}Version : {CLEAR}{}", pkg.version);
-        println!("{BOLD}Package base : {CLEAR}{}", pkg.package_base);
-        println!("{BOLD}Votes : {CLEAR}{}", pkg.num_votes);
-        println!("{BOLD}Popularity : {CLEAR}{}", pkg.popularity);
+        println!("{BOLD}Name \t\t\t: {CLEAR}{}", pkg.name);
+        println!("{BOLD}Version \t\t: {CLEAR}{}", pkg.version);
+        println!("{BOLD}Package base \t\t: {CLEAR}{}", pkg.package_base);
+        println!("{BOLD}Votes \t\t\t: {CLEAR}{}", pkg.num_votes);
+        println!("{BOLD}Popularity \t\t: {CLEAR}{}", pkg.popularity);
         println!(
-            "{BOLD}Description : {CLEAR}{}",
+            "{BOLD}Description \t\t: {CLEAR}{}",
             pkg.description
                 .unwrap_or(format!("{GREY}No description.{CLEAR}"))
         );
         println!(
-            "{BOLD}Submitter : {CLEAR}{}",
+            "{BOLD}Submitter \t\t: {CLEAR}{}",
             pkg.submitter
                 .unwrap_or(format!("{GREY}No submitter.{CLEAR}"))
         );
         println!(
-            "{BOLD}Maintainer : {CLEAR}{}",
+            "{BOLD}Maintainer \t\t: {CLEAR}{}",
             pkg.maintainer
                 .unwrap_or(format!("{GREY}No maintainer.{CLEAR}"))
         );
         let co_maintainers = pkg.co_maintainers;
         println!(
-            "{BOLD}Co-maintainers : {CLEAR}{}",
+            "{BOLD}Co-maintainers \t\t: {CLEAR}{}",
             if co_maintainers.is_empty() {
                 format!("{GREY}No co-maintainers.{CLEAR}")
             } else {
@@ -151,39 +151,39 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         if let Some(pkg_ood) = pkg.out_of_date {
             let ood_ts = Utc.timestamp_opt(pkg_ood, 0).unwrap();
             println!(
-                "{BOLD}Out of date : {RED}Flagged out of date since {}{CLEAR}",
-                ood_ts.format("%Y-%m-%d %H:%M (UTC)")
+                "{BOLD}Out of date \t\t: {RED}Flagged out of date since {}{CLEAR}",
+                ood_ts.format("%Y-%m-%d %H: %M (UTC)")
             )
         } else {
-            println!("{BOLD}Out of date : {CLEAR}{GREY}Not flagged out of date{CLEAR}");
+            println!("{BOLD}Out of date \t\t: {CLEAR}{GREY}Not flagged out of date{CLEAR}");
         }
         let first_sub_ts = Utc.timestamp_opt(pkg.first_submitted, 0).unwrap();
         println!(
-            "{BOLD}First submitted : {CLEAR}{}",
-            first_sub_ts.format("%Y-%m-%d %H:%M (UTC)")
+            "{BOLD}First submitted \t: {CLEAR}{}",
+            first_sub_ts.format("%Y-%m-%d %H: %M (UTC)")
         );
         let last_mod_ts = Utc.timestamp_opt(pkg.last_modified, 0).unwrap();
         println!(
-            "{BOLD}Last updated : {CLEAR}{}",
-            last_mod_ts.format("%Y-%m-%d %H:%M (UTC)")
+            "{BOLD}Last updated \t\t: {CLEAR}{}",
+            last_mod_ts.format("%Y-%m-%d %H: %M (UTC)")
         );
 
         println!(
-            "{BOLD}Git clone URL : {CLEAR}https://aur.archlinux.org/{}.git",
+            "{BOLD}Git clone URL \t\t: {CLEAR}https://aur.archlinux.org/{}.git",
             pkg.package_base
         );
         println!(
-            "{BOLD}Upstream URL : {CLEAR}{}",
+            "{BOLD}Upstream URL \t\t: {CLEAR}{}",
             pkg.url.unwrap_or(format!("{GREY}No upstream URL."))
         );
         println!(
-            "{BOLD}Tarball URL : {CLEAR}https://aur.archlinux.org{}",
+            "{BOLD}Tarball URL \t\t: {CLEAR}https://aur.archlinux.org{}",
             pkg.url_path
         );
-        println!("{BOLD}Licenses : {CLEAR}{}", pkg.license.join(", "));
+        println!("{BOLD}Licenses \t\t: {CLEAR}{}", pkg.license.join(", "));
         let groups = pkg.groups;
         println!(
-            "{BOLD}Groups : {CLEAR}{}",
+            "{BOLD}Groups \t\t\t: {CLEAR}{}",
             if groups.is_empty() {
                 format!("{GREY}No groups.{CLEAR}")
             } else {
@@ -192,7 +192,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         );
         let provides = pkg.provides;
         println!(
-            "{BOLD}Provides : {CLEAR}{}",
+            "{BOLD}Provides \t\t: {CLEAR}{}",
             if provides.is_empty() {
                 format!("{GREY}No provides.{CLEAR}")
             } else {
@@ -201,7 +201,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         );
         let depends = pkg.depends;
         println!(
-            "{BOLD}Depends : {CLEAR}{}",
+            "{BOLD}Depends \t\t: {CLEAR}{}",
             if depends.is_empty() {
                 format!("{GREY}No dependencies.{CLEAR}")
             } else {
@@ -210,7 +210,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         );
         let opt_depends = pkg.opt_depends;
         println!(
-            "{BOLD}Opt. dependencies : {CLEAR}{}",
+            "{BOLD}Opt. dependencies \t: {CLEAR}{}",
             if opt_depends.is_empty() {
                 format!("{GREY}No optionnal dependencies.{CLEAR}")
             } else {
@@ -219,7 +219,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         );
         let make_depends = pkg.make_depends;
         println!(
-            "{BOLD}Make dependencies : {CLEAR}{}",
+            "{BOLD}Make dependencies \t: {CLEAR}{}",
             if make_depends.is_empty() {
                 format!("{GREY}No make dependencies.{CLEAR}")
             } else {
@@ -228,7 +228,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         );
         let check_depends = pkg.check_depends;
         println!(
-            "{BOLD}Check dependencies : {CLEAR}{}",
+            "{BOLD}Check dependencies \t: {CLEAR}{}",
             if check_depends.is_empty() {
                 format!("{GREY}No check dependencies.{CLEAR}")
             } else {
@@ -237,7 +237,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         );
         let conflicts = pkg.conflicts;
         println!(
-            "{BOLD}Conflicts : {CLEAR}{}",
+            "{BOLD}Conflicts \t\t: {CLEAR}{}",
             if conflicts.is_empty() {
                 format!("{GREY}No conflicts.{CLEAR}")
             } else {
@@ -246,7 +246,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         );
         let replaces = pkg.replaces;
         println!(
-            "{BOLD}Replaces : {CLEAR}{}",
+            "{BOLD}Replaces \t\t: {CLEAR}{}",
             if replaces.is_empty() {
                 format!("{GREY}No replaces.{CLEAR}")
             } else {
@@ -255,7 +255,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         );
         let keywords = pkg.keywords;
         println!(
-            "{BOLD}Keywords : {CLEAR}{}",
+            "{BOLD}Keywords\t\t: {CLEAR}{}",
             if keywords.is_empty() {
                 format!("{GREY}No keywords.{CLEAR}")
             } else {
