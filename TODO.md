@@ -13,3 +13,4 @@
 
 ### update
 - [ ] check for new commits on source of "-git" packages to know when to update and ask the user if it's the proper mechanism to use.
+- [ ] option to re-build based on other packages being updated
