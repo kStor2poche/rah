@@ -72,8 +72,9 @@ pub fn check_deps(depends: Vec<String>) -> Result<Vec<Box<str>>> {
 
 pub fn split_pacman_aur(pkgs: Vec<String>) -> Result<(Option<Vec<String>>, Option<Vec<String>>)> {
     // Used to know if package can be installed through pacman
-    let mut pacman_sync_check_args = pkgs.iter()
-                .fold(String::from("(^"), |s1, s2| s1 + &"$|^".to_string() + &s2);
+    let mut pacman_sync_check_args = pkgs
+        .iter()
+        .fold(String::from("(^"), |s1, s2| s1 + &"$|^".to_string() + &s2);
     pacman_sync_check_args.push_str("$)");
     let pacman_sync_check = Command::new("pacman")
         .arg("-Ssq")
@@ -86,11 +87,9 @@ pub fn split_pacman_aur(pkgs: Vec<String>) -> Result<(Option<Vec<String>>, Optio
                 "Pacman command did not exit or was killed by a signal"
             ));
         }
-        Some(0) => {
-            Some(output.split("/").collect::<Vec<_>>())
-        },
+        Some(0) => Some(output.split("/").collect::<Vec<_>>()),
         Some(_) => None,
     };
-    
+
     todo!("{:?}", pacman_pkgs)
 }
