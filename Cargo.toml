@@ -14,5 +14,4 @@ log = "0.4.21"
 raur = "7.0.0"
 tokio = { version = "1.37.0", features = ["full"] }
 toml = "0.8.13"
-tr = "0.1.7"
 users = "0.11.0"

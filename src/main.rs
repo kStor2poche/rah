@@ -1,59 +1,20 @@
+mod colors;
 mod config;
 mod database;
+mod helpers;
 mod query;
 mod sync;
 
 use {
     crate::config::Config,
-    anyhow::{anyhow, Context, Result},
+    anyhow::Result,
     clap::{Arg, ArgAction, Command},
-    log::{debug, error, info},
+    log::info,
     std::env,
     tokio,
-    tr::{tr, tr_init},
-    users::{get_current_uid, get_user_by_uid},
 };
 
 const VERSION: &str = "0.0.1";
-
-fn require_root() -> Result<()> {
-    let uid = get_current_uid();
-
-    debug!("Current uid is {uid}...");
-
-    if let Some(user) = get_user_by_uid(uid) {
-        debug!("...corresponding to user name {:?}", user.name());
-    } else {
-        error!("... but this uid doesn't correspond to any user");
-        return Err(anyhow!(
-            "Cannot identify current user (uid {uid}), aborting..."
-        ));
-    }
-
-    if uid != 0 {
-        error!("Program should be run as root, returning with error...");
-        return Err(anyhow!("Program should be run as root, please launch it again with your favourite privilege escalation method !"));
-    }
-
-    Ok(())
-}
-
-fn check_exec_context() -> Result<()> {
-    // First check if the chap launching this is even using an arch-based distro
-    // TODO: more thourough checks an maybe allow running if pacman/makepkg is present ?
-    let data = std::fs::read_to_string("/etc/os-release")
-        .context(
-            tr!(
-                "Your distro is probably not an Arch-based distro, rah shouldn't be used on it. If untrue, please file an issue here https://github.com/kStor2poche/rah/issues\nAborting..."
-                )
-        )?;
-
-    if !data.contains("arch") {
-        return Err(anyhow!(tr!("Your distro is probably not an Arch-based distro, rah shouldn't be used on it. If untrue, please file an issue here https://github.com/kStor2poche/rah/issues\nAborting...")));
-    }
-
-    Ok(())
-}
 
 #[tokio::main]
 async fn main() -> Result<()> {
@@ -65,9 +26,7 @@ async fn main() -> Result<()> {
         env_logger::init();
     }
 
-    tr_init!("./translations/");
-
-    check_exec_context()?;
+    helpers::check_exec_context()?;
 
     let command_matches = Command::new("rah")
         .about("rah - the Rusty AUR Helper !")
@@ -79,20 +38,18 @@ async fn main() -> Result<()> {
                 .short('c')
                 .long("config")
                 .value_name("FILE")
-                .help(tr!("Choose a specific config file")),
+                .help("Choose a specific config file"),
         )
         .subcommand(
             Command::new("query")
                 .short_flag('Q')
                 .long_flag("query")
-                .about(tr!("Query the local package database"))
+                .about("Query the local package database")
                 .arg(
                     Arg::new("search")
                         .short('s')
                         .long("search")
-                        .help(tr!(
-                            "Search for matching packages in the local package database"
-                        ))
+                        .help( "Search for matching packages in the local package database")
                         .conflicts_with("info")
                         .action(ArgAction::Set)
                         .num_args(1..),
@@ -101,7 +58,7 @@ async fn main() -> Result<()> {
                     Arg::new("info")
                         .short('i')
                         .long("info")
-                        .help(tr!("Get package info from the local package database"))
+                        .help("Get package info from the local package database")
                         .conflicts_with("search")
                         .action(ArgAction::Set)
                         .num_args(1..),
