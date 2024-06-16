@@ -4,6 +4,7 @@ use {
     chrono::{TimeZone, Utc},
     log::{error, trace},
     raur::Raur,
+    std::process::Command,
 };
 
 const AUR_URL: &str = "https://aur.archlinux.org/";
@@ -41,6 +42,7 @@ pub async fn sync(packages: Vec<&str>) -> Result<()> {
         let hit_missing_check_deps = helpers::check_deps(hit.check_depends)?;
         missing_check_deps.extend(hit_missing_check_deps);
     }
+
     todo!();
 
     Ok(())
@@ -80,6 +82,8 @@ pub async fn search(packages: Vec<&str>) -> Result<()> {
             ))
         }
         // slow as f*ck, currently unusable, will probably have to think of another "batch" approach
+        // TODO: Use pacman-conf to retrieve the database and do pacman's job ourself in order to
+        // also be able to get info on whether a package is installed or provided by something else ?
         /*
         let pacman_install_check = Command::new("pacman").arg("-Qq").arg(&pkg.name).output()?;
         match pacman_install_check.status.code() {

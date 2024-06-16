@@ -49,7 +49,7 @@ async fn main() -> Result<()> {
                     Arg::new("search")
                         .short('s')
                         .long("search")
-                        .help( "Search for matching packages in the local package database")
+                        .help("Search for matching packages in the local package database")
                         .conflicts_with("info")
                         .action(ArgAction::Set)
                         .num_args(1..),
