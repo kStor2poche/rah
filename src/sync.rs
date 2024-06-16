@@ -1,30 +1,13 @@
 use {
+    crate::{colors::*, helpers},
     anyhow::{anyhow, Result},
     chrono::{TimeZone, Utc},
-    log::{error, info},
+    log::{error, trace},
     raur::Raur,
     std::process::Command,
 };
 
-// const escape sequences
-pub const CLEAR: &str = "\x1b[0m";
-pub const BOLD: &str = "\x1b[1m";
-pub const BLACK: &str = "\x1b[30m";
-pub const RED: &str = "\x1b[31m";
-pub const GREEN: &str = "\x1b[32m";
-pub const YELLOW: &str = "\x1b[33m";
-pub const BLUE: &str = "\x1b[34m";
-pub const PURPLE: &str = "\x1b[35m";
-pub const CYAN: &str = "\x1b[36m";
-pub const GREY: &str = "\x1b[37m";
-pub const BLACK_L: &str = "\x1b[38";
-pub const RED_L: &str = "\x1b[39m";
-pub const GREEN_L: &str = "\x1b[40m";
-pub const YELLOW_L: &str = "\x1b[41m";
-pub const BLUE_L: &str = "\x1b[42m";
-pub const PURPLE_L: &str = "\x1b[43m";
-pub const CYAN_L: &str = "\x1b[44m";
-pub const WHITE: &str = "\x1b[45m";
+const AUR_URL: &str = "https://aur.archlinux.org/";
 
 pub async fn sync(packages: Vec<&str>) -> Result<()> {
     let raur = raur::Handle::new();
@@ -32,48 +15,51 @@ pub async fn sync(packages: Vec<&str>) -> Result<()> {
     let hits = raur.info(&packages).await?;
 
     if hits.len() != packages.len() {
-        let mut err = format!("Package(s) not found : ");
+        let mut err_msg = format!("Package(s) not found : ");
         let hit_names = hits.iter().map(|pkg| pkg.name.clone()).collect::<Vec<_>>();
         for package in packages.as_slice() {
             if !(hit_names.contains(&package.to_string())) {
-                err.push_str(package);
-                err.push(' ');
+                err_msg.push_str(package);
+                err_msg.push(' ');
             }
         }
-        error!("{}", err);
-        return Err(anyhow!("{}", err));
+        error!("{}", err_msg);
+        return Err(anyhow!("{}", err_msg));
     }
 
+    let mut missing_deps = Vec::new();
+    let mut missing_make_deps = Vec::new();
+    let mut missing_check_deps = Vec::new();
+
     for hit in hits {
-        info!("checking dependencies for {} :", hit.name);
-        let pcmn_deps_chk = Command::new("pacman")
-            .arg("-T")
-            .args(hit.depends)
-            .output()?;
-        match pcmn_deps_chk.status.code() {
-            None => return Err(anyhow!("Pacman command did not exit or was killed by a signal")),
-            Some(127) => {
-                let deps_output = String::from_utf8_lossy(&pcmn_deps_chk.stdout);
-                let deps_vec = deps_output.split(' ').collect::<Vec<&str>>();
-                info!("{}'s missing deps : {:?}", hit.name, deps_vec);
-            },
-            Some(0) => info!("deps ok !"),
-            Some(_) => return Err(anyhow!("Pacman returned a fatal error : {}", String::from_utf8_lossy(&pcmn_deps_chk.stderr))),
-        }
-        info!("checking make dependencies for {} :", hit.name);
-        todo!()
+        trace!("checking dependencies for {} :", hit.name);
+        let hit_missing_deps = helpers::check_deps(hit.depends)?;
+        missing_deps.extend(hit_missing_deps);
+        trace!("checking make dependencies for {} :", hit.name);
+        let hit_missing_make_deps = helpers::check_deps(hit.make_depends)?;
+        missing_make_deps.extend(hit_missing_make_deps);
+        trace!("checking check dependencies for {} :", hit.name);
+        let hit_missing_check_deps = helpers::check_deps(hit.check_depends)?;
+        missing_check_deps.extend(hit_missing_check_deps);
     }
+    todo!();
 
     Ok(())
 }
 
 pub async fn search(packages: Vec<&str>) -> Result<()> {
+    trace!("searching for packages {packages:?}");
+
+    if packages.len() > 1 {
+        println!("{BOLD}{YELLOW_L}warning{CLEAR} : search will only account for the first argument passed.");
+    }
+
     let raur = raur::Handle::new();
 
-    let hits = raur.search(packages.join(" ")).await?;
+    let hits = raur.search(packages[0]).await?;
 
     println!(
-        "{BOLD}{BLUE}:: {CLEAR}{BOLD}Found {} package{}{CLEAR}",
+        "{BOLD}{BLUE}:: {WHITE}Found {} package{}{CLEAR}",
         hits.len(),
         if hits.len() != 1 { "s" } else { "" }
     );
@@ -94,6 +80,33 @@ pub async fn search(packages: Vec<&str>) -> Result<()> {
                 last_mod_str.format("%Y/%m/%d")
             ))
         }
+        // slow as f*ck, currently unusable, will probably have to think of another "batch" approach
+        /*
+        let pacman_install_check = Command::new("pacman").arg("-Qq").arg(&pkg.name).output()?;
+        match pacman_install_check.status.code() {
+            None => {
+                return Err(anyhow!(
+                    "Pacman command did not exit or was killed by a signal"
+                ))
+            }
+            Some(0) => 'cmd_ok: {
+                let pkg_search_output = String::from_utf8_lossy(&pacman_install_check.stdout);
+                let pkg_search_output = pkg_search_output.trim_end();
+
+                if pkg_search_output.len() == 0 {
+                    break 'cmd_ok;
+                }
+
+                if pkg_search_output == pkg.name {
+                    pkg_flags.push(format!("{CYAN} [installed]{CLEAR}"))
+                } else {
+                    pkg_flags.push(format!("{CYAN} [provided by {}]{CLEAR}", pkg_search_output))
+                }
+            }
+            Some(_) => (),
+        }
+        */
+
         println!(
             "{BOLD}{} {GREEN}{}{}\n{CLEAR}    {}",
             pkg.name,
@@ -113,7 +126,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
     let hits = raur.info(&packages).await?;
 
     println!(
-        "{BOLD}{BLUE}:: {CLEAR}{BOLD}Found info for {} package{}{CLEAR}",
+        "{BOLD}{BLUE}:: {WHITE}Found info for {} package{}{CLEAR}",
         hits.len(),
         if hits.len() != 1 { "s" } else { "" }
     );
@@ -169,17 +182,14 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         );
 
         println!(
-            "{BOLD}Git clone URL \t\t: {CLEAR}https://aur.archlinux.org/{}.git",
+            "{BOLD}Git clone URL \t\t: {CLEAR}{AUR_URL}{}.git",
             pkg.package_base
         );
         println!(
             "{BOLD}Upstream URL \t\t: {CLEAR}{}",
             pkg.url.unwrap_or(format!("{GREY}No upstream URL."))
         );
-        println!(
-            "{BOLD}Tarball URL \t\t: {CLEAR}https://aur.archlinux.org{}",
-            pkg.url_path
-        );
+        println!("{BOLD}Tarball URL \t\t: {CLEAR}{AUR_URL}{}", pkg.url_path);
         println!("{BOLD}Licenses \t\t: {CLEAR}{}", pkg.license.join(", "));
         let groups = pkg.groups;
         println!(
