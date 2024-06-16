@@ -4,7 +4,6 @@ use {
     chrono::{TimeZone, Utc},
     log::{error, trace},
     raur::Raur,
-    std::process::Command,
 };
 
 const AUR_URL: &str = "https://aur.archlinux.org/";
