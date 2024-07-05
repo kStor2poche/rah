@@ -38,9 +38,9 @@ pub async fn sync(packages: Vec<&str>) -> Result<()> {
 
     let alpm = Alpm::new("/", "/var/lib/pacman/")?; // change this at some point to get it from
                                                     // the pacman-conf command
-    //let mut missing_deps = Vec::new();
-    //let mut missing_make_deps = Vec::new();
-    //let mut missing_check_deps = Vec::new();
+                                                    //let mut missing_deps = Vec::new();
+                                                    //let mut missing_make_deps = Vec::new();
+                                                    //let mut missing_check_deps = Vec::new();
 
     for hit in hits {
         //let deps =
@@ -81,7 +81,7 @@ pub async fn search(packages: Vec<&str>) -> Result<()> {
         hits.len(),
         if hits.len() != 1 { "s" } else { "" }
     );
-    
+
     let alpm = Alpm::new("/", "/var/lib/pacman/")?;
     let localdb = alpm.localdb();
     let mut pkg_flags: Vec<_> = vec![String::from("")];
@@ -94,10 +94,13 @@ pub async fn search(packages: Vec<&str>) -> Result<()> {
 
         if let Ok(local_pkg) = local_pkg {
             let local_pkg_ver = local_pkg.version().to_string();
-            if  local_pkg_ver == pkg.version {
+            if local_pkg_ver == pkg.version {
                 pkg_flags.push(format!("{CYAN} [installed]"))
             } else {
-                pkg_flags.push(format!("{CYAN_L} [other ver. installed ({})]", local_pkg_ver))
+                pkg_flags.push(format!(
+                    "{CYAN_L} [other ver. installed ({})]",
+                    local_pkg_ver
+                ))
             }
         }
 

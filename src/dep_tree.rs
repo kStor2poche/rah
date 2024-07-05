@@ -74,8 +74,8 @@ impl DepTree {
         let alpm = Alpm::new("/", "/var/lib/pacman/")?; // change this at some point to get it from
                                                         // the pacman-conf command
 
-        // TODO: I think there's a better way to get this info with pacman-conf (or with alpm but
-        // the config options don't seem to be implemented in the rust interface)
+        // TODO: I think there's a better way to know which repos are used with pacman-conf (or with
+        // alpm but the config options don't seem to be implemented in the rust interface)
         alpm.register_syncdb("core", SigLevel::NONE)?;
         match alpm.register_syncdb("extra", SigLevel::NONE) {
             Err(err) => eprintln!(
@@ -97,7 +97,7 @@ impl DepTree {
         let pkgs = db.pkgs();
 
         //let mut cache = HashSet::new(); // because caching could be a nice thing, I just don't
-                                        //know how much I'd actually benefit from it
+        //know how much I'd actually benefit from it
 
         let pkg = pkgs.find_satisfier(package.depends().first().unwrap().to_string());
         todo!()
