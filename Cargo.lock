@@ -27,6 +27,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "alpm"
+version = "3.0.5"
+source = "git+https://github.com/archlinux/alpm.rs?rev=adad998#adad9983f70f49654a5226f5fc6f9e2158e24ea6"
+dependencies = [
+ "alpm-sys",
+ "bitflags 2.5.0",
+]
+
+[[package]]
+name = "alpm-sys"
+version = "3.0.0"
+source = "git+https://github.com/archlinux/alpm.rs?rev=adad998#adad9983f70f49654a5226f5fc6f9e2158e24ea6"
+dependencies = [
+ "pkg-config",
+]
+
+[[package]]
 name = "android-tzdata"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -790,6 +807,7 @@ dependencies = [
 name = "rah"
 version = "0.1.0"
 dependencies = [
+ "alpm",
  "anyhow",
  "chrono",
  "clap",

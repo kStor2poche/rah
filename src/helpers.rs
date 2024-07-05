@@ -40,36 +40,6 @@ pub fn check_exec_context() -> Result<()> {
     Ok(())
 }
 
-pub fn check_deps(depends: Vec<String>) -> Result<Vec<Box<str>>> {
-    let pacman_deps_check = Command::new("pacman").arg("-T").args(depends).output()?;
-    match pacman_deps_check.status.code() {
-        None => {
-            return Err(anyhow!(
-                "Pacman command did not exit or was killed by a signal"
-            ))
-        }
-        Some(127) => {
-            let deps_output = String::from_utf8_lossy(&pacman_deps_check.stdout);
-            let deps_vec = deps_output
-                .split('\n')
-                .map(|s| s.into())
-                .collect::<Vec<Box<str>>>();
-            trace!("    found : {:?}", deps_vec);
-            return Ok(deps_vec);
-        }
-        Some(0) => {
-            trace!("    deps ok !");
-            return Ok(vec![]);
-        }
-        Some(_) => {
-            return Err(anyhow!(
-                "Pacman returned a fatal error : {}",
-                String::from_utf8_lossy(&pacman_deps_check.stderr)
-            ))
-        }
-    }
-}
-
 pub fn split_pacman_aur(pkgs: Vec<String>) -> Result<(Option<Vec<String>>, Option<Vec<String>>)> {
     // Used to know if package can be installed through pacman
     let mut pacman_sync_check_args = pkgs

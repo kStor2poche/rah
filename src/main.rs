@@ -1,6 +1,7 @@
 mod colors;
 mod config;
 mod database;
+mod dep_tree;
 mod helpers;
 mod query;
 mod sync;
