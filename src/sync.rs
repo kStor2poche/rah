@@ -1,10 +1,13 @@
 use {
-    crate::{colors::*, helpers},
+    crate::{
+        colors::*,
+        dep_tree::{DepTree, Pkg},
+    },
+    alpm::Alpm,
     anyhow::{anyhow, Result},
     chrono::{TimeZone, Utc},
     log::{error, trace},
     raur::Raur,
-    std::process::Command,
 };
 
 const AUR_URL: &str = "https://aur.archlinux.org/";
@@ -27,20 +30,34 @@ pub async fn sync(packages: Vec<&str>) -> Result<()> {
         return Err(anyhow!("{}", err_msg));
     }
 
-    let mut missing_deps = Vec::new();
-    let mut missing_make_deps = Vec::new();
-    let mut missing_check_deps = Vec::new();
+    let formated_hits = hits
+        .iter()
+        .map(|hit| hit.clone().into())
+        .collect::<Vec<Pkg>>();
+    let deps = DepTree::build_all(&formated_hits)?;
+
+    let alpm = Alpm::new("/", "/var/lib/pacman/")?; // change this at some point to get it from
+                                                    // the pacman-conf command
+    //let mut missing_deps = Vec::new();
+    //let mut missing_make_deps = Vec::new();
+    //let mut missing_check_deps = Vec::new();
 
     for hit in hits {
-        trace!("checking dependencies for {} :", hit.name);
-        let hit_missing_deps = helpers::check_deps(hit.depends)?;
-        missing_deps.extend(hit_missing_deps);
-        trace!("checking make dependencies for {} :", hit.name);
-        let hit_missing_make_deps = helpers::check_deps(hit.make_depends)?;
-        missing_make_deps.extend(hit_missing_make_deps);
-        trace!("checking check dependencies for {} :", hit.name);
-        let hit_missing_check_deps = helpers::check_deps(hit.check_depends)?;
-        missing_check_deps.extend(hit_missing_check_deps);
+        //let deps =
+        //println!("to build : {:?}", deps.build);
+        //println!("not found : {:?}", deps.missing);
+        //println!("to install : {:?}", deps.install);
+        //println!("no need : {:?}", deps.unneeded);
+        todo!()
+        //trace!("checking dependencies for {} :", hit.name);
+        //let hit_missing_deps = helpers::check_deps(hit.depends)?;
+        //missing_deps.extend(hit_missing_deps);
+        //trace!("checking make dependencies for {} :", hit.name);
+        //let hit_missing_make_deps = helpers::check_deps(hit.make_depends)?;
+        //missing_make_deps.extend(hit_missing_make_deps);
+        //trace!("checking check dependencies for {} :", hit.name);
+        //let hit_missing_check_deps = helpers::check_deps(hit.check_depends)?;
+        //missing_check_deps.extend(hit_missing_check_deps);
     }
 
     todo!();
@@ -64,19 +81,32 @@ pub async fn search(packages: Vec<&str>) -> Result<()> {
         hits.len(),
         if hits.len() != 1 { "s" } else { "" }
     );
-
+    
+    let alpm = Alpm::new("/", "/var/lib/pacman/")?;
+    let localdb = alpm.localdb();
     let mut pkg_flags: Vec<_> = vec![String::from("")];
-    for pkg in hits {
-        // TODO: Fetch the pacman db (and/or our database ?) to see if searched packages are already
-        // installed with pacman and/or are in the local rah DB
 
+    for pkg in hits {
         pkg_flags.clear();
+        // Fetch the pacman db (and/or our database ?) to see if searched packages are already
+        // installed with pacman
+        let local_pkg = localdb.pkg(pkg.name.clone());
+
+        if let Ok(local_pkg) = local_pkg {
+            let local_pkg_ver = local_pkg.version().to_string();
+            if  local_pkg_ver == pkg.version {
+                pkg_flags.push(format!("{CYAN} [installed]"))
+            } else {
+                pkg_flags.push(format!("{CYAN_L} [other ver. installed ({})]", local_pkg_ver))
+            }
+        }
+
         // out of date
         if let Some(pkg_ood) = pkg.out_of_date {
             let ood_str = Utc.timestamp_opt(pkg_ood, 0).unwrap();
             let last_mod_str = Utc.timestamp_opt(pkg.last_modified, 0).unwrap();
             pkg_flags.push(format!(
-                "{RED} [out of date since {}, last update {}]{CLEAR}",
+                "{RED} [out of date since {}, last update {}]",
                 ood_str.format("%Y/%m/%d"),
                 last_mod_str.format("%Y/%m/%d")
             ))
@@ -116,7 +146,7 @@ pub async fn search(packages: Vec<&str>) -> Result<()> {
             pkg.version,
             pkg_flags.join(""),
             pkg.description
-                .unwrap_or(format!("{GREY}No description.{CLEAR}"))
+                .unwrap_or(format!("{BLACK_L}No description.{CLEAR}"))
         );
     }
 
@@ -143,23 +173,23 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         println!(
             "{BOLD}Description \t\t: {CLEAR}{}",
             pkg.description
-                .unwrap_or(format!("{GREY}No description.{CLEAR}"))
+                .unwrap_or(format!("{BLACK_L}No description.{CLEAR}"))
         );
         println!(
             "{BOLD}Submitter \t\t: {CLEAR}{}",
             pkg.submitter
-                .unwrap_or(format!("{GREY}No submitter.{CLEAR}"))
+                .unwrap_or(format!("{BLACK_L}No submitter.{CLEAR}"))
         );
         println!(
             "{BOLD}Maintainer \t\t: {CLEAR}{}",
             pkg.maintainer
-                .unwrap_or(format!("{GREY}No maintainer.{CLEAR}"))
+                .unwrap_or(format!("{BLACK_L}No maintainer.{CLEAR}"))
         );
         let co_maintainers = pkg.co_maintainers;
         println!(
             "{BOLD}Co-maintainers \t\t: {CLEAR}{}",
             if co_maintainers.is_empty() {
-                format!("{GREY}No co-maintainers.{CLEAR}")
+                format!("{BLACK_L}No co-maintainers.{CLEAR}")
             } else {
                 co_maintainers.join(", ")
             }
@@ -171,7 +201,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
                 ood_ts.format("%Y-%m-%d %H: %M (UTC)")
             )
         } else {
-            println!("{BOLD}Out of date \t\t: {CLEAR}{GREY}Not flagged out of date{CLEAR}");
+            println!("{BOLD}Out of date \t\t: {CLEAR}{BLACK_L}Not flagged out of date{CLEAR}");
         }
         let first_sub_ts = Utc.timestamp_opt(pkg.first_submitted, 0).unwrap();
         println!(
@@ -190,7 +220,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         );
         println!(
             "{BOLD}Upstream URL \t\t: {CLEAR}{}",
-            pkg.url.unwrap_or(format!("{GREY}No upstream URL."))
+            pkg.url.unwrap_or(format!("{BLACK_L}No upstream URL."))
         );
         println!("{BOLD}Tarball URL \t\t: {CLEAR}{AUR_URL}{}", pkg.url_path);
         println!("{BOLD}Licenses \t\t: {CLEAR}{}", pkg.license.join(", "));
@@ -198,7 +228,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         println!(
             "{BOLD}Groups \t\t\t: {CLEAR}{}",
             if groups.is_empty() {
-                format!("{GREY}No groups.{CLEAR}")
+                format!("{BLACK_L}No groups.{CLEAR}")
             } else {
                 groups.join(", ")
             }
@@ -207,7 +237,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         println!(
             "{BOLD}Provides \t\t: {CLEAR}{}",
             if provides.is_empty() {
-                format!("{GREY}No provides.{CLEAR}")
+                format!("{BLACK_L}No provides.{CLEAR}")
             } else {
                 provides.join(", ")
             }
@@ -216,7 +246,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         println!(
             "{BOLD}Depends \t\t: {CLEAR}{}",
             if depends.is_empty() {
-                format!("{GREY}No dependencies.{CLEAR}")
+                format!("{BLACK_L}No dependencies.{CLEAR}")
             } else {
                 depends.join(", ")
             }
@@ -225,7 +255,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         println!(
             "{BOLD}Opt. dependencies \t: {CLEAR}{}",
             if opt_depends.is_empty() {
-                format!("{GREY}No optionnal dependencies.{CLEAR}")
+                format!("{BLACK_L}No optionnal dependencies.{CLEAR}")
             } else {
                 opt_depends.join(", ")
             }
@@ -234,7 +264,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         println!(
             "{BOLD}Make dependencies \t: {CLEAR}{}",
             if make_depends.is_empty() {
-                format!("{GREY}No make dependencies.{CLEAR}")
+                format!("{BLACK_L}No make dependencies.{CLEAR}")
             } else {
                 make_depends.join(", ")
             }
@@ -243,7 +273,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         println!(
             "{BOLD}Check dependencies \t: {CLEAR}{}",
             if check_depends.is_empty() {
-                format!("{GREY}No check dependencies.{CLEAR}")
+                format!("{BLACK_L}No check dependencies.{CLEAR}")
             } else {
                 check_depends.join(", ")
             }
@@ -252,7 +282,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         println!(
             "{BOLD}Conflicts \t\t: {CLEAR}{}",
             if conflicts.is_empty() {
-                format!("{GREY}No conflicts.{CLEAR}")
+                format!("{BLACK_L}No conflicts.{CLEAR}")
             } else {
                 conflicts.join(", ")
             }
@@ -261,7 +291,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         println!(
             "{BOLD}Replaces \t\t: {CLEAR}{}",
             if replaces.is_empty() {
-                format!("{GREY}No replaces.{CLEAR}")
+                format!("{BLACK_L}No replaces.{CLEAR}")
             } else {
                 replaces.join(", ")
             }
@@ -270,7 +300,7 @@ pub async fn info(packages: Vec<&str>) -> Result<()> {
         println!(
             "{BOLD}Keywords\t\t: {CLEAR}{}",
             if keywords.is_empty() {
-                format!("{GREY}No keywords.{CLEAR}")
+                format!("{BLACK_L}No keywords.{CLEAR}")
             } else {
                 keywords.join(", ")
             }
