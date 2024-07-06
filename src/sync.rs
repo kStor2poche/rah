@@ -30,10 +30,7 @@ pub async fn sync(packages: Vec<&str>) -> Result<()> {
         return Err(anyhow!("{}", err_msg));
     }
 
-    let formated_hits = hits
-        .iter()
-        .map(|hit| hit.clone().into())
-        .collect::<Vec<Pkg>>();
+    let formated_hits = hits.iter().map(|hit| hit.into()).collect::<Vec<Pkg>>();
     let deps = DepTree::build_all(&formated_hits)?;
 
     let alpm = Alpm::new("/", "/var/lib/pacman/")?; // change this at some point to get it from
