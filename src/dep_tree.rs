@@ -1,7 +1,8 @@
 use {
     crate::colors::*,
-    alpm::{Alpm, SigLevel},
+    alpm::{Alpm, AlpmList, Db, SigLevel},
     anyhow::{anyhow, Result},
+    raur::Handle,
 };
 
 #[derive(Clone)]
@@ -62,21 +63,69 @@ impl<'a> From<&'a alpm::Package> for Pkg<'a> {
 pub struct DepTree<'a> {
     pkg: Pkg<'a>,
     dep_type: DepType,
-    parent: Option<&'a DepTree<'a>>,
     leaves: Option<Vec<DepTree<'a>>>,
+    parent: Option<*mut DepTree<'a>>,
 }
 
 impl<'a> DepTree<'a> {
-    pub fn build(package: &'a Pkg, alpm: Option<Alpm>) -> Result<Self> { // TODO: WILL need HEAVY
-                                                                         // refactoring
+    pub fn build(package: &'a Pkg, local_db: &Db, sync_dbs: &AlpmList<&'a Db>, raur: &Handle, prev: Option<&DepTree>) -> Result<Self> {
         let mut branch = Self {
             pkg: package.clone(),
             dep_type: DepType::Base,
-            parent: None,
             leaves: Some(Vec::new()),
+            parent: None,
         };
+
+        let local_pkgs = local_db.pkgs();
+
+        let mut leaves: Vec<DepTree> = Vec::new();
+        let mut not_found: Vec<String> = Vec::new(); // TODO: fill the Vec. Now. Do it. Just
+                                                     // reminding you. No pressure.
+
+        //let mut cache = HashSet::new(); // because caching could be a nice thing, I just don't
+        //know how much I'd actually benefit from it
+
+        for pkg in package.depends() {
+            if let Some(_) = local_pkgs.find_satisfier(pkg.clone()) {
+                continue; // package already installed with a correct version
+            }
+
+            for db in *sync_dbs {
+                match db.pkgs().find_satisfier(pkg.clone()) {
+                    Some(pkg) => { // a pacman pkg
+                        let leave = DepTree {
+                            pkg: pkg.into(),
+                            dep_type: DepType::Dep,
+                            leaves: None,
+                            parent: Some(&mut branch as *mut DepTree<'a>), // here be dragons !
+                        };
+                        leaves.push(leave);
+                    }
+                    None => { // an aur pkg, but how can I do dependency lookup not horribly,
+                              // except by caching raur's results ?
+                        todo!()
+                    }
+                     
+                };
+            }
+        }
+
+        branch.leaves = Some(leaves); // TODO: mfw unsafe code
+
+        todo!()
+    }
+
+    pub fn build_all(packages: &'a Vec<Pkg>) -> Result<Vec<DepTree<'a>>> { // TODO: change this
+                                                                           // function so that it
+                                                                           // returns just a list
+                                                                           // of alpm and pacman
+                                                                           // packages to install ?
+                                                                           // OR take alpm as an
+                                                                           // argument
+        let mut res: Vec<DepTree> = Vec::new();
+
         let alpm = Alpm::new("/", "/var/lib/pacman/")?; // change this at some point to get it from
-                                                        // the pacman-conf command
+        let raur = Handle::new();
 
         // TODO: I think there's a better way to know which repos are used with pacman-conf -l (or
         // with alpm but the config options don't seem to be implemented in the rust interface)
@@ -98,50 +147,10 @@ impl<'a> DepTree<'a> {
         };
 
         let local_db = alpm.localdb();
-        let local_pkgs = local_db.pkgs();
-        let sync_dbs = alpm.syncdbs();
+        let sync_dbs = alpm.syncdbs(); // faire un slice::from_raw_parts ??
 
-        let mut leaves: Vec<DepTree> = Vec::new();
-        let mut not_found: Vec<String> = Vec::new(); // TODO: fill the Vec. Now. Do it. Just
-                                                     // reminding you. No pressure.
-
-        //let mut cache = HashSet::new(); // because caching could be a nice thing, I just don't
-        //know how much I'd actually benefit from it
-
-        for pkg in package.depends() {
-            if let Some(_) = local_pkgs.find_satisfier(pkg.clone()) {
-                continue; // up to date package already installed
-            }
-
-            for db in sync_dbs {
-                match db.pkgs().find_satisfier(pkg.clone()) {
-                    Some(pkg) => { // a pacman pkg
-                        let leave = DepTree {
-                            pkg: pkg.into(),
-                            dep_type: DepType::Dep,
-                            parent: Some(&branch), // TODO: hahaha
-                            leaves: None,
-                        };
-                        leaves.push(leave);
-                    }
-                    None => { // an aur pkg, but how can I do dependency lookup not horribly,
-                              // except by caching raur's results ?
-                        todo!()
-                    }
-                     
-                };
-            }
-        }
-
-        branch.leaves = Some(leaves);
-
-        todo!()
-    }
-
-    pub fn build_all(packages: &'a Vec<Pkg>) -> Result<Vec<DepTree<'a>>> {
-        let mut res: Vec<DepTree> = Vec::new();
         for package in packages {
-            res.push(DepTree::build(package, None)?);
+            res.push(DepTree::build(package, &local_db, &sync_dbs, &raur, None)?);
         }
         Ok(res)
     }
