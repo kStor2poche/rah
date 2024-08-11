@@ -14,6 +14,7 @@ const AUR_URL: &str = "https://aur.archlinux.org/";
 
 pub async fn sync(packages: Vec<&str>) -> Result<()> {
     let raur = raur::Handle::new();
+    let alpm = Alpm::new("/", "/var/lib/pacman/")?;
 
     let hits = raur.info(&packages).await?;
 
@@ -31,7 +32,7 @@ pub async fn sync(packages: Vec<&str>) -> Result<()> {
     }
 
     let formated_hits = hits.iter().map(|hit| hit.into()).collect::<Vec<Pkg>>();
-    let deps = DepTree::build_all(&formated_hits)?;
+    let deps = DepTree::build_all(&formated_hits, &alpm, &raur).await?;
 
     let alpm = Alpm::new("/", "/var/lib/pacman/")?; // change this at some point to get it from
                                                     // the pacman-conf command

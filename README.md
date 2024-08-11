@@ -1,5 +1,5 @@
 # Rah - Rusty AUR Helper
-Some time ago, I tried to do my own [AUR helper](https://github.com/kStor2poche/yaah/) using bash just for fun, but I quickly abandoned the project because it was made in quite a convoluted way (plus I found out later that the name was already taken by another AUR helper 🥲).
+Some time ago, I tried to do my own [AUR helper](https://github.com/kStor2poche/yaah/) using bash just for fun, but I quickly abandoned the project because it was made in quite a convoluted way (plus I found out later that the name was already taken by another AUR helper 🥲) (nvm this name is also already taken, I'll find another one later).
 
 So here I am, trying to make an AUR helper that
 - is fast
@@ -7,7 +7,7 @@ So here I am, trying to make an AUR helper that
 - has pacman-like syntax
 
 and most importantly 
-- provides interactive mechanisms when things go bad (or even if they don't) during an installation in order to fix everything, rather than trying to do its own thing and ending up breaking everything
+- provides interactive mechanisms when things go bad (or even if they don't) during an installation in order to fix everything and direct towards solution, rather than trying to do its own thing and ending up breaking everything or simply letting you down :(
 
 ## Structure
 - main.rs &rarr; control flow
