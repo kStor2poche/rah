@@ -10,6 +10,7 @@
 ### installation
 - [ ] basic installation with makepkg w/ cleaning or not
 - [ ] have option to build in a clean chroot
+- [ ] (somehow) get file listing for packages to allow for `rah -F*` operations
 
 ### update
 - [ ] check for new commits on source of "-git" packages to know when to update and ask the user if it's the proper mechanism to use.
